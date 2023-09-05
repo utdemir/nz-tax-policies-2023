@@ -5,11 +5,13 @@ import { TopUBI } from "./TopUBI";
 import { Act2023 } from "./Act2023";
 import { INCOME_DISTRIBUTION_2021 } from "./incomes";
 import { Policy } from "../../policies/policy";
+import { Greens2023 } from "./Greens2023";
 
 export const all: Policy<any>[] = [
   new Labour2023({}, INCOME_DISTRIBUTION_2021),
   new National2023({}, INCOME_DISTRIBUTION_2021),
+  new Act2023({}, INCOME_DISTRIBUTION_2021),
+  new Greens2023({}, INCOME_DISTRIBUTION_2021),
   new Top2023({}, INCOME_DISTRIBUTION_2021),
   new TopUBI({}, INCOME_DISTRIBUTION_2021),
-  new Act2023({}, INCOME_DISTRIBUTION_2021),
 ];

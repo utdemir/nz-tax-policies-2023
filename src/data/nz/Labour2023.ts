@@ -2,6 +2,7 @@ import { IncomeDetails, Policy } from "../../policies/policy";
 import {
   TaxBrackets,
   applyTaxBrackets,
+  independentEarnerTaxCredit,
   prettyTaxBrackets,
 } from "../../policies/utils";
 
@@ -18,38 +19,43 @@ const incomeTaxBrackets: TaxBrackets = [
 ];
 
 export class Labour2023 extends Policy<any> {
-  get usedFields() {
+  override get usedFields() {
     return {};
   }
 
-  get name() {
+  override get name() {
     return "Labour 2023";
   }
 
-  get color() {
+  override get color() {
     return "#ff0000";
   }
 
-  get references() {
+  override get references() {
     return [];
   }
 
-  get description() {
-    return `${prettyTaxBrackets(incomeTaxBrackets)}`;
+  override get description() {
+    return [
+      {
+        type: "tax_brackets" as const,
+        value: prettyTaxBrackets(incomeTaxBrackets),
+      },
+    ];
   }
 
   override calculateAdjustments(totalIncome: number): IncomeDetails {
     const ret: IncomeDetails = [];
     ret.push(["Income Tax", -applyTaxBrackets(incomeTaxBrackets, totalIncome)]);
 
-    let ietc = 0;
-    if (totalIncome >= 24_000 && totalIncome <= 44_000) {
-      ietc = 10 * 52;
-    } else if (totalIncome > 44_000 && totalIncome < 48_000) {
-      ietc = 10 * 52 - (totalIncome - 44_000) * 0.13;
-    }
+    const ietc = independentEarnerTaxCredit(
+      totalIncome,
+      24_000,
+      44_000,
+      48_000
+    );
     if (ietc > 0) {
-      // ret.push(["Independent Earner Tax Credit", ietc]);
+      ret.push(["Independent Earner Tax Credit", ietc]);
     }
 
     return ret;

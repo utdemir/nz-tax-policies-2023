@@ -8,18 +8,30 @@ export type ToggleableFields = {
 
 export type IncomeDetails = [string, number][];
 
+export type PolicyDescription =
+  | {
+      type: "tax_brackets";
+      value: { lower: number; upper?: number; rate: number }[];
+    }
+  | {
+      type: "text";
+      value: string;
+    };
+
 type MapToNull<T> = {
   [K in keyof T]: null;
 };
 
 export abstract class Policy<T extends keyof ToggleableFields> {
   constructor(
-    private readonly toggles: Pick<ToggleableFields, T>,
+    readonly _toggles: Pick<ToggleableFields, T>,
     private readonly incomeDistribution: IncomeDistributionBracket[]
   ) {}
 
   abstract get name(): string;
-  abstract get description(): string;
+
+  abstract get description(): PolicyDescription[];
+
   abstract get references(): string[];
   abstract get color(): Color;
   abstract get usedFields(): MapToNull<Omit<ToggleableFields, T>>;
@@ -60,17 +72,23 @@ export abstract class Policy<T extends keyof ToggleableFields> {
       return this._nationwideTaxCache;
     }
 
-    const remaining = [];
+    let upperBoundProcessed = false;
 
     let ret = 0;
     for (const bracket of this.incomeDistribution) {
-      if (bracket.lower && bracket.upper) {
+      if (bracket.upper !== undefined) {
         const mid = (bracket.lower + bracket.upper) / 2;
         const adj = this.calculateTotalAdjustment(mid) * bracket.population;
         ret += adj;
-        if (this.name.startsWith("Labour")) {
-          console.log(this.name, mid, bracket.population, adj);
+      } else {
+        if (upperBoundProcessed) {
+          throw new Error("Unexpected number of remaining brackets");
         }
+        upperBoundProcessed = true;
+        const adj =
+          this.calculateTotalAdjustment(bracket.lower * 2.05) *
+          bracket.population;
+        ret += adj;
       }
     }
 

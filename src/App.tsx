@@ -5,6 +5,7 @@ import Link from "@mui/material/Link";
 import { IncomeChart } from "./IncomeChart";
 import * as policies_nz from "./data/nz";
 import { PolicyInfoPane } from "./PolicyInfoPane";
+import { Masonry } from "@mui/lab";
 
 function Copyright() {
   return (
@@ -29,9 +30,11 @@ export default function App() {
           New Zealand, 2023 Election
         </Typography>
         <IncomeChart policies={policies_nz.all} />
-        {policies_nz.all.map((policy, ix) => (
-          <PolicyInfoPane key={ix} policy={policy} />
-        ))}
+        <Masonry spacing={2}>
+          {policies_nz.all.map((policy, ix) => (
+            <PolicyInfoPane key={ix} policy={policy} />
+          ))}
+        </Masonry>
         <hr />
         <Copyright />
       </Box>

@@ -39,19 +39,19 @@ export function applyTaxBrackets(
   return go(0, brackets);
 }
 
-type PrettyTaxBrackets = {
+type PrettyTaxBracket = {
   lower: number;
   upper?: number;
   rate: number;
 };
 
-export function prettyTaxBrackets(brackets: TaxBrackets): string {
-  const ret: PrettyTaxBrackets[] = [];
+export function prettyTaxBrackets(brackets: TaxBrackets): PrettyTaxBracket[] {
+  const ret: PrettyTaxBracket[] = [];
 
   function go(lower: number, bs: TaxBrackets) {
     if (bs.length === 1) {
       const [{ rate: r }] = bs;
-      ret.push({ lower, upper: Infinity, rate: r });
+      ret.push({ lower, upper: undefined, rate: r });
     } else {
       const [{ rate: r1 }, { threshold: upper }, ...rest] = bs;
       ret.push({ lower, upper, rate: r1 });
@@ -61,12 +61,24 @@ export function prettyTaxBrackets(brackets: TaxBrackets): string {
 
   go(0, brackets);
 
-  return ret
-    .map(
-      ({ lower, upper, rate }) =>
-        `lower: ${lower}, upper: ${upper}, rate: ${rate}`
-    )
-    .join("\n");
+  return ret;
+}
+
+export function independentEarnerTaxCredit(
+  totalIncome: number,
+  lowerBound: number,
+  peak: number,
+  upperBound: number
+): number {
+  const target = 10 * 52;
+  if (totalIncome >= lowerBound && totalIncome <= peak) {
+    return target;
+  } else if (totalIncome > peak && totalIncome < upperBound) {
+    const decreaseRate = (10 * 52) / (upperBound - peak);
+    return target + (totalIncome - peak) * -decreaseRate;
+  } else {
+    return 0;
+  }
 }
 
 // Income plot

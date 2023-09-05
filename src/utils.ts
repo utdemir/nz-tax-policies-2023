@@ -1,11 +1,14 @@
-// Memoize
-
-type Memoizable = string | number | boolean | null | undefined;
-
-function memoize<Args extends any[], Ret>(
-  this: any,
-  target: (...args: Args) => Ret,
-  context: any
-): TypedPropertyDescriptor<(...args: Args) => Ret> {
-  throw new Error("Not implemented");
+export function formatNZD(nzd: number): string {
+  // group by triplets
+  const nzdStr = nzd
+    .toFixed(0)
+    .split("")
+    .reverse()
+    .join("")
+    .match(/.{1,3}/g)!
+    .join(",")
+    .split("")
+    .reverse()
+    .join("");
+  return "$" + nzdStr;
 }

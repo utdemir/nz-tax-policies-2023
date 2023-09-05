@@ -1,5 +1,9 @@
 import { IncomeDetails, Policy } from "../../policies/policy";
-import { TaxBrackets, applyTaxBrackets } from "../../policies/utils";
+import {
+  TaxBrackets,
+  applyTaxBrackets,
+  prettyTaxBrackets,
+} from "../../policies/utils";
 
 const incomeTaxBrackets: TaxBrackets = [
   { rate: 0.175 },
@@ -16,8 +20,13 @@ export class Act2023 extends Policy<any> {
     return "#ffdf00";
   }
 
-  get description() {
-    return "";
+  override get description() {
+    return [
+      {
+        type: "tax_brackets" as const,
+        value: prettyTaxBrackets(incomeTaxBrackets),
+      },
+    ];
   }
 
   get references() {

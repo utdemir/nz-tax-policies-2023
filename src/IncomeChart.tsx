@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { Chart } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,7 +13,14 @@ import {
 } from "chart.js";
 import { INCOME_DATA_LABELS } from "./policies/utils";
 import { Policy } from "./policies/policy";
-import zoomPlugin from "chartjs-plugin-zoom";
+import { IconButton, Stack } from "@mui/material";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+} from "@mui/icons-material";
+import { formatNZD } from "./utils";
 
 ChartJS.register(
   LineController,
@@ -23,8 +30,7 @@ ChartJS.register(
   Title,
   CategoryScale,
   Legend,
-  Tooltip,
-  zoomPlugin
+  Tooltip
 );
 
 type Props = {
@@ -46,6 +52,39 @@ export function IncomeChart(props: Props): ReactNode {
     [props.policies]
   );
 
+  const ABSOLUTE_MIN = 0;
+  const ABSOLUTE_MAX = 1000;
+
+  const [rangeMin, setRangeMin] = useState<number>(ABSOLUTE_MIN);
+  const [rangeMax, setRangeMax] = useState<number>(150);
+
+  function zoom(factor: number) {
+    const currentSize = rangeMax - rangeMin;
+    const currentMid = (rangeMax + rangeMin) / 2;
+
+    const newSize = Math.max(currentSize / factor, 5);
+
+    setRangeMin(Math.max(ABSOLUTE_MIN, currentMid - newSize / 2));
+    setRangeMax(Math.min(ABSOLUTE_MAX, rangeMin + newSize));
+  }
+
+  function pan(direction: "left" | "right") {
+    const currentSize = rangeMax - rangeMin;
+    const inc = direction === "left" ? -1 : 1;
+
+    const panAmount = currentSize / 4;
+
+    const newMin = clamp(
+      rangeMin + panAmount * inc,
+      ABSOLUTE_MIN,
+      ABSOLUTE_MAX - currentSize
+    );
+    const newMax = Math.min(ABSOLUTE_MAX, newMin + currentSize);
+
+    setRangeMin(newMin);
+    setRangeMax(newMax);
+  }
+
   return (
     <>
       <Chart
@@ -58,8 +97,8 @@ export function IncomeChart(props: Props): ReactNode {
                 display: true,
                 text: "Income",
               },
-              min: 0,
-              max: 120,
+              min: rangeMin,
+              max: rangeMax,
             },
             y: {
               title: {
@@ -96,46 +135,27 @@ export function IncomeChart(props: Props): ReactNode {
               display: true,
               position: "bottom",
             },
-            zoom: {
-              limits: {
-                x: {
-                  minRange: 10,
-                },
-              },
-              pan: {
-                enabled: true,
-                mode: "x",
-                modifierKey: "shift",
-              },
-              zoom: {
-                wheel: {
-                  enabled: true,
-                  speed: 0.005,
-                },
-                pinch: {
-                  enabled: true,
-                },
-                mode: "x",
-              },
-            },
           },
         }}
       />
+      <Stack direction={"row-reverse"}>
+        <IconButton onClick={() => zoom(1.2)}>
+          <ZoomIn />
+        </IconButton>
+        <IconButton onClick={() => zoom(0.8)}>
+          <ZoomOut />
+        </IconButton>
+        <IconButton onClick={() => pan("right")}>
+          <ChevronRight />
+        </IconButton>
+        <IconButton onClick={() => pan("left")}>
+          <ChevronLeft />
+        </IconButton>
+      </Stack>
     </>
   );
 }
 
-function formatNZD(nzd: number): string {
-  // group by triplets
-  const nzdStr = nzd
-    .toFixed(0)
-    .split("")
-    .reverse()
-    .join("")
-    .match(/.{1,3}/g)!
-    .join(",")
-    .split("")
-    .reverse()
-    .join("");
-  return "$" + nzdStr;
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }

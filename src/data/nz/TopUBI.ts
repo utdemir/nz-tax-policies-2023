@@ -8,7 +8,10 @@ export class TopUBI extends Policy<any> {
     return "#47c4af";
   }
   override get description() {
-    return "";
+    return [
+      { type: "text" as const, value: "Flat tax: %35" },
+      { type: "text" as const, value: "UBI: $16,500" },
+    ];
   }
   override get usedFields() {
     return {};

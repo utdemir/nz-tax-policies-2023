@@ -1,5 +1,4 @@
 // Source: https://web.archive.org/web/20230329043004/https://www.ird.govt.nz/about-us/tax-statistics/revenue-refunds/revenue-collected-2001-to-2022
-import { PLOT_SIZE } from "../../constants";
 import tableRaw from "./income_tables_2001_21.tsv?raw";
 
 const table = tableRaw.split("\n").map((line) => line.split("\t"));
@@ -100,7 +99,6 @@ const totalPopulation = INCOME_DISTRIBUTION_2021.reduce(
   (acc, d) => acc + d.population,
   0
 );
-console.log(totalPopulation);
 assert(totalPopulation === 4_362_650, "total population");
 
 // Utils
